@@ -2,106 +2,81 @@ import { Mail, Phone, MapPin, Linkedin, Twitter, Github, Facebook } from "lucide
 
 const Footer = () => {
   return (
-    <footer id="contact" className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+    <footer id="contact" className="bg-black text-white font-mono">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          {/* Company Info */}
           <div>
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-300 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">CS</span>
-              </div>
-              <span className="text-2xl font-bold">ClaimSwift</span>
-            </div>
-            <p className="text-gray-300 leading-relaxed mb-6">
-              Revolutionizing insurance claims processing with AI-powered automation and intelligent decision-making.
+            <div className="text-2xl font-semibold mb-6">Company Name</div>
+            <p className="text-gray-400 text-sm leading-relaxed mb-6">
+              Accelerating insurance claim decisions with AI-powered workflows, automation, and explainability.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-blue-600 text-gray-300 hover:text-white transition-colors">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-blue-600 text-gray-300 hover:text-white transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-blue-600 text-gray-300 hover:text-white transition-colors">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-blue-600 text-gray-300 hover:text-white transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
+              {[Linkedin, Twitter, Github, Facebook].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="p-2 border border-white/10 rounded-md hover:bg-white/5 transition-colors"
+                >
+                  <Icon className="h-4 w-4 text-white" />
+                </a>
+              ))}
             </div>
           </div>
-          
+
+          {/* Solutions */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">Solutions</h3>
-            <ul className="space-y-3 text-gray-300">
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Auto Claims</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Property Claims</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Health Insurance</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Commercial Lines</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Life Insurance</a></li>
+            <h3 className="text-sm font-medium uppercase mb-6 tracking-wide text-white/90">Solutions</h3>
+            <ul className="space-y-3 text-sm text-gray-400">
+              {['Auto Claims', 'Property Claims', 'Health Insurance', 'Commercial Lines', 'Life Insurance'].map((item, i) => (
+                <li key={i}>
+                  <a href="#" className="hover:text-white transition-colors">{item}</a>
+                </li>
+              ))}
             </ul>
           </div>
-          
+
+          {/* Company Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">Company</h3>
-            <ul className="space-y-3 text-gray-300">
-              <li><a href="#" className="hover:text-blue-400 transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Press</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Partners</a></li>
-              <li><a href="#" className="hover:text-blue-400 transition-colors">Blog</a></li>
+            <h3 className="text-sm font-medium uppercase mb-6 tracking-wide text-white/90">Company</h3>
+            <ul className="space-y-3 text-sm text-gray-400">
+              {['About Us', 'Careers', 'Press', 'Partners', 'Blog'].map((item, i) => (
+                <li key={i}>
+                  <a href="#" className="hover:text-white transition-colors">{item}</a>
+                </li>
+              ))}
             </ul>
           </div>
-          
+
+          {/* Contact */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">Contact Us</h3>
-            <div className="space-y-4 text-gray-300">
+            <h3 className="text-sm font-medium uppercase mb-6 tracking-wide text-white/90">Contact Us</h3>
+            <div className="space-y-4 text-sm text-gray-400">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-600 rounded-lg">
-                  <Mail className="h-4 w-4 text-white" />
-                </div>
-                <span>hello@claimswift.ai</span>
+                <Mail className="h-4 w-4 text-white" />
+                <span>email@example.com</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-600 rounded-lg">
-                  <Phone className="h-4 w-4 text-white" />
-                </div>
+                <Phone className="h-4 w-4 text-white" />
                 <span>+1 (555) 123-4567</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-600 rounded-lg">
-                  <MapPin className="h-4 w-4 text-white" />
-                </div>
-                <span>San Francisco, CA</span>
+                <MapPin className="h-4 w-4 text-white" />
+                <span>Location, CA</span>
               </div>
             </div>
-            
-            {/* Newsletter Signup */}
-            {/* <div className="mt-6">
-              <h4 className="font-medium mb-3 text-white">Stay Updated</h4>
-              <div className="flex space-x-2">
-                <input 
-                  type="email"
-                  placeholder="Your email" 
-                  className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
-                />
-                <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-300 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300">
-                  Subscribe
-                </button>
-              </div>
-            </div> */}
           </div>
         </div>
-        
-        <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">
-            © 2024 ClaimSwift AI. All rights reserved.
-          </p>
-          <div className="flex space-x-6 text-sm text-gray-400 mt-4 md:mt-0">
-            <a href="#" className="hover:text-blue-400 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-blue-400 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-blue-400 transition-colors">Security</a>
-            <a href="#" className="hover:text-blue-400 transition-colors">Cookies</a>
+
+        {/* Bottom Row */}
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+          <p>© 2025 Company. All rights reserved.</p>
+          <div className="flex space-x-6 mt-4 md:mt-0">
+            {['Privacy Policy', 'Terms of Service', 'Security', 'Cookies'].map((item, i) => (
+              <a key={i} href="#" className="hover:text-white transition-colors">
+                {item}
+              </a>
+            ))}
           </div>
         </div>
       </div>

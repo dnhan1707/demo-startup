@@ -1,6 +1,6 @@
 export default function Solution() {
   return (
-    <section id="solution-section" className="bg-black text-white h-screen px-6 md:px-12 flex items-center">
+    <section id="solution-section" className="bg-black text-white h-screen px-6 md:px-12 flex items-center font-mono">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
         {/* Left: Text Content */}
         <div>
@@ -33,4 +33,3 @@ export default function Solution() {
     </section>
   );
 }
-

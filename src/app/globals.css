@@ -19,13 +19,13 @@
   }
 }
 
-@font-face {
+/* @font-face {
   font-family: 'Alliance No 2';
   src: url('/fonts/AllianceNo2-Regular.woff2') format('woff2'),
        url('/fonts/AllianceNo2-Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-}
+} */
 
 body {
   font-family: 'Alliance No 2', sans-serif;

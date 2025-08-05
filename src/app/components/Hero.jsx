@@ -1,6 +1,6 @@
 export default function Hero() {
   return (
-    <section className="relative h-screen w-full overflow-hidden font-alliance">
+    <section className="relative h-screen w-full overflow-hidden font-mono">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <video

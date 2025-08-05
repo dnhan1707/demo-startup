@@ -32,7 +32,7 @@ const steps = [
 
 export default function Workflow() {
   return (
-    <section className="bg-white text-black py-24 px-6 md:px-12 font-alliance">
+    <section className="bg-white text-black py-24 px-6 md:px-12 font-mono">
       <div className="max-w-5xl mx-auto text-center mb-20">
         <h2 className="text-4xl md:text-5xl font-medium mb-4">Workflow Overview</h2>
         <p className="text-lg opacity-70">
