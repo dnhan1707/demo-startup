@@ -103,11 +103,6 @@ export default function DemoPage() {
             }))
           : input.value
       })).filter(input => input.data && input.data !== ''),
-      metadata: {
-        source: 'demo_interface',
-        version: '2.1.0',
-        userAgent: navigator.userAgent
-      }
     };
     return payload;
   };
