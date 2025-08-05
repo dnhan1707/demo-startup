@@ -1,4 +1,6 @@
 export default function Hero() {
+  const videoUrl = process.env.NEXT_PUBLIC_HERO_VIDEO_URL || '/industrial_video.mp4';
+  
   return (
     <section className="relative h-screen w-full overflow-hidden font-mono">
       {/* Background Video */}
@@ -10,7 +12,7 @@ export default function Hero() {
           playsInline
           className="object-cover w-full h-full"
         >
-          <source src="/industrial_video.mp4" type="video/mp4" />
+          <source src={videoUrl} type="video/mp4" />
         </video>
       </div>
 

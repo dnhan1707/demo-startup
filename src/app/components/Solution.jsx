@@ -1,4 +1,6 @@
 export default function Solution() {
+  const videoUrl = process.env.NEXT_PUBLIC_SOLUTION_VIDEO_URL || '/time.mp4';
+  
   return (
     <section id="solution-section" className="bg-black text-white h-screen px-6 md:px-12 flex items-center font-mono">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
@@ -25,7 +27,7 @@ export default function Solution() {
               playsInline
               className="object-cover w-full h-full rounded-xl"
             >
-              <source src="/time.mp4" type="video/mp4" />
+              <source src={videoUrl} type="video/mp4" />
             </video>
           </div>
         </div>
