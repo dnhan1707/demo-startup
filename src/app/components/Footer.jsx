@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Company Info */}
           <div>
-            <div className="text-2xl font-semibold mb-6">Synopsys</div>
+            <div className="text-2xl font-semibold mb-6">Synsure</div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Accelerating insurance claim decisions with AI-powered workflows, automation, and explainability.
             </p>
