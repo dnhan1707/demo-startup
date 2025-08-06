@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Synsureai",
-  description: "Automate Insurance Process",
+  description: "AI-Powered Automation For Insurance Claim Processing",
 };
 
 export default function RootLayout({ children }) {

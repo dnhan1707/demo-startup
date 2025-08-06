@@ -25,7 +25,7 @@ export default function Hero() {
           AI-Powered Automation
         </h1>
         <h2 className="text-white text-5xl md:text-6xl font-medium tracking-tight mt-2">
-          for Every Decision
+        for Insurance Claim Processing
         </h2>
       </div>
     </section>
