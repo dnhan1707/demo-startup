@@ -1,4 +1,5 @@
-const base_url = process.env.NEXT_PUBLIC_BASE_URL;
+const base_url = process.env.NEXT_PUBLIC_BASE_URL
+
 
 export async function fetchResponse(formData) {
     try {

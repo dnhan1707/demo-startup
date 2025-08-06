@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { sendEmail } from '../service/fetchFunctions';
 
 export default function RequestDemoModal({ isOpen, onClose }) {
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [form, setForm] = useState({ name: '', company: '', email: '', message: '' });
   const [status, setStatus] = useState(null);
 
   if (!isOpen) return null;
@@ -21,7 +21,7 @@ export default function RequestDemoModal({ isOpen, onClose }) {
         const res = await sendEmail(form);
         if (res.success) {
             setStatus('success');
-            setForm({ name: '', email: '', message: '' });
+            setForm({ name: '', company: '', email: '', message: '' });
         } else {
             setStatus('error');
         }
@@ -42,6 +42,15 @@ export default function RequestDemoModal({ isOpen, onClose }) {
             name="name"
             placeholder="Your Name"
             value={form.name}
+            onChange={handleChange}
+            className="w-full border px-3 py-2 rounded"
+            required
+          />
+          <input
+            type="text"
+            name="company"
+            placeholder="Company Name"
+            value={form.company}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
             required
