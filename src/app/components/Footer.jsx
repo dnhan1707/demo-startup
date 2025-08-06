@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Company Info */}
           <div>
-            <div className="text-2xl font-semibold mb-6">Company Name</div>
+            <div className="text-2xl font-semibold mb-6">Synopsys</div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Accelerating insurance claim decisions with AI-powered workflows, automation, and explainability.
             </p>
@@ -54,15 +54,15 @@ const Footer = () => {
             <div className="space-y-4 text-sm text-gray-400">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-white" />
-                <span>email@example.com</span>
+                <span>mileswcaldwell@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-white" />
-                <span>+1 (555) 123-4567</span>
+                <span>+1 (626)716-4125</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-white" />
-                <span>Location, CA</span>
+                <span>California</span>
               </div>
             </div>
           </div>
@@ -70,7 +70,7 @@ const Footer = () => {
 
         {/* Bottom Row */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-          <p>© 2025 Company. All rights reserved.</p>
+          <p>© 2025 Synopsys. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             {['Privacy Policy', 'Terms of Service', 'Security', 'Cookies'].map((item, i) => (
               <a key={i} href="#" className="hover:text-white transition-colors">
