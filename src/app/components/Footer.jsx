@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Company Info */}
           <div>
-            <div className="text-2xl font-semibold mb-6">Synopsys</div>
+            <div className="text-2xl font-semibold mb-6">Synsure</div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Accelerating insurance claim decisions with AI-powered workflows, automation, and explainability.
             </p>
@@ -28,7 +28,7 @@ const Footer = () => {
           <div>
             <h3 className="text-sm font-medium uppercase mb-6 tracking-wide text-white/90">Solutions</h3>
             <ul className="space-y-3 text-sm text-gray-400">
-              {['Auto Claims', 'Property Claims', 'Health Insurance', 'Commercial Lines', 'Life Insurance'].map((item, i) => (
+              {['Auto Claims', 'Property Claims', 'Travel Insurance', 'Life Insurance'].map((item, i) => (
                 <li key={i}>
                   <a href="#" className="hover:text-white transition-colors">{item}</a>
                 </li>
