@@ -70,7 +70,7 @@ const Footer = () => {
 
         {/* Bottom Row */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-          <p>© 2025 Synopsys. All rights reserved.</p>
+          <p>© 2025 Synsure. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             {['Privacy Policy', 'Terms of Service', 'Security', 'Cookies'].map((item, i) => (
               <a key={i} href="#" className="hover:text-white transition-colors">
