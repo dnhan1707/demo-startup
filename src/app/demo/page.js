@@ -1,160 +1,131 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { fetchResponse } from '../service/fetchFunctions';
+import { fetchCases, bulkSubmitCases } from '../service/fetchFunctions';
 import CaseList from './components/CaseList';
-import CaseInputPanel from './components/CaseInputPanel';
-import ResultPanel from './components/ResultPanel';
+import { useRouter } from 'next/navigation';
+import { useState as useReactState } from 'react';
 
 export default function DemoPage() {
-  // In-memory cases
   const [cases, setCases] = useState([]);
-  const [selectedCase, setSelectedCase] = useState(null);
-  const [inputs, setInputs] = useState([{ type: null, value: null }]);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newCaseName, setNewCaseName] = useState('');
   const [editingCaseId, setEditingCaseId] = useState(null);
   const [editCaseName, setEditCaseName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [newCaseName, setNewCaseName] = useState('');
+  const [casesLoading, setCasesLoading] = useState(false);
+  const [redirecting, setRedirecting] = useReactState(false);
+  const [selectedCaseIds, setSelectedCaseIds] = useState([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
 
-  useEffect(() => {
-    async function fetchCases() {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/cases`);
-        const data = await res.json();
-        setCases(data.cases || []);
-      } catch {
-        setCases([]);
-      }
+  const router = useRouter();
+
+  const refreshCases = async () => {
+    setCasesLoading(true);
+    try {
+      const data = await fetchCases();
+      setCases(data || []);
+    } catch {
+      setCases([]);
     }
-    fetchCases();
-  }, []);
-
-  // CRUD: Create new case
-  const handleCreateCase = async () => {
-    if (!newCaseName.trim()) return;
-    const newCase = {
-      id: `case_${Date.now()}`,
-      title: newCaseName,
-      description: '',
-      defaultInputs: [{ type: null, value: null }]
-    };
-    setCases(prev => [...prev, newCase]);
-    setSelectedCase(newCase);
-    setInputs(newCase.defaultInputs);
-    setNewCaseName('');
-    setIsCreating(false);
-    // Optionally send to backend here
-    // await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/cases`, { method: 'POST', body: JSON.stringify(newCase), headers: { 'Content-Type': 'application/json' } });
+    setCasesLoading(false);
   };
 
-  // CRUD: Edit case
+  useEffect(() => {
+    refreshCases();
+  }, []);
+
+  // CRUD: Create new case (local only, for demo)
+  const handleCreateCase = async () => {
+    if (!newCaseName.trim()) return;
+    // Generate a temp id for the new case
+    const tempId = `temp_${Date.now()}`;
+    setIsCreating(false);
+    setNewCaseName('');
+    setRedirecting(true);
+    setTimeout(() => {
+      router.push(`/demo/${tempId}?name=${encodeURIComponent(newCaseName)}`);
+    }, 400);
+  };
+
+  // CRUD: Edit case (local only, for demo)
   const handleEditCase = (caseId, title) => {
     setEditingCaseId(caseId);
     setEditCaseName(title);
   };
   const handleSaveEditCase = (caseId) => {
-    setCases(prev => prev.map(c => c.id === caseId ? { ...c, title: editCaseName } : c));
     setEditingCaseId(null);
     setEditCaseName('');
     // Optionally send to backend here
   };
 
-  // CRUD: Delete case
+  // CRUD: Delete case (local only, for demo)
   const handleDeleteCase = (caseId) => {
-    setCases(prev => prev.filter(c => c.id !== caseId));
-    if (selectedCase?.id === caseId) {
-      setSelectedCase(null);
-      setInputs([{ type: null, value: null }]);
-      setResult(null);
-    }
     // Optionally send to backend here
+    refreshCases();
   };
 
   const handleCaseSelect = (caseData) => {
-    setSelectedCase(caseData);
-    setInputs(caseData.defaultInputs || [{ type: null, value: null }]);
-    setResult(null);
+    setRedirecting(true);
+    setTimeout(() => {
+      router.push(`/demo/${caseData.id}`);
+    }, 400); // short delay for UX, can be adjusted or removed
   };
 
-  const handleTypeSelect = (index, type) => {
-    const updated = [...inputs];
-    updated[index] = { type, value: type === 'upload' ? [] : '' };
-    setInputs(updated);
+  // Checkbox toggle
+  const handleCaseCheckbox = (caseId) => {
+    setSelectedCaseIds(prev =>
+      prev.includes(caseId)
+        ? prev.filter(id => id !== caseId)
+        : [...prev, caseId]
+    );
   };
 
-  const handleFileChange = (index, files) => {
-    const updated = [...inputs];
-    updated[index].value = [...files];
-    setInputs(updated);
-  };
-
-  const addInput = () => {
-    setInputs([...inputs, { type: null, value: null }]);
-  };
-
-  const removeInput = (index) => {
-    const updated = [...inputs];
-    updated.splice(index, 1);
-    setInputs(updated);
-  };
-
-  const resetAll = () => {
-    setSelectedCase(null);
-    setInputs([{ type: null, value: null }]);
-    setResult(null);
-  };
-
-  // Only allow PDF
-  const buildApiPayload = () => {
-    const formData = new FormData();
-    formData.append('case_id', selectedCase?.id || 'custom');
-    formData.append('case_type', selectedCase?.title || 'Custom Case');
-    let hasFiles = false;
-    inputs.forEach((input) => {
-      if (input.type === 'upload' && input.value && input.value.length > 0) {
-        input.value.forEach(file => {
-          if (file.type === "application/pdf") {
-            formData.append('files', file);
-            hasFiles = true;
-          }
-        });
-      }
-    });
-    return formData;
-  };
-
-  const submitDemo = async () => {
-    setLoading(true);
-    setResult(null);
-    const apiPayload = buildApiPayload();
+  // Run all cases
+  const handleRunAll = async () => {
+    setBulkLoading(true);
+    setBulkResult(null);
     try {
-      const apiResult = await fetchResponse(apiPayload);
-      // Parse the stringified JSON in apiResult if needed
-      let parsedResult = apiResult;
-      if (apiResult && typeof apiResult.result === 'string') {
-        try {
-          parsedResult = JSON.parse(apiResult.result);
-        } catch {
-          parsedResult = { error: 'Failed to parse result' };
-        }
-      } else if (apiResult && typeof apiResult.result === 'object') {
-        parsedResult = apiResult.result;
-      }
-      setResult(parsedResult);
-      // console.log("Parsed: ", parsedResult);
-    } catch (error) {
-      console.error('API call failed:', error);
-      setResult(null);
-    } finally {
-      setLoading(false);
+      const ids = cases.map(c => c.id);
+      await bulkSubmitCases(ids);
+      setBulkResult('done');
+      setTimeout(() => setBulkResult(null), 2000);
+    } catch (e) {
+      setBulkResult('Bulk run failed');
+      setTimeout(() => setBulkResult(null), 2000);
     }
+    setBulkLoading(false);
+  };
+
+  // Run selected cases
+  const handleRunSelected = async () => {
+    if (selectedCaseIds.length === 0) return;
+    setBulkLoading(true);
+    setBulkResult(null);
+    try {
+      await bulkSubmitCases(selectedCaseIds);
+      setBulkResult('done');
+      setTimeout(() => setBulkResult(null), 2000);
+    } catch (e) {
+      setBulkResult('Bulk run failed');
+      setTimeout(() => setBulkResult(null), 2000);
+    }
+    setBulkLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-black text-white font-mono">
-      {/* Header */}
+      {/* Loading overlay when redirecting or bulk running */}
+      {(redirecting || bulkLoading) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="flex flex-col items-center">
+            <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mb-4" />
+            <div className="text-lg text-blue-200 font-semibold">
+              {redirecting ? "Loading case..." : "Running cases..."}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="border-b border-gray-800 bg-black/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -163,49 +134,58 @@ export default function DemoPage() {
               <h1 className="text-xl font-medium">CLAIMS DECISION ENGINE</h1>
             </div>
             <div className="text-sm text-gray-400">
-              {selectedCase ? `CASE: ${selectedCase.title.toUpperCase()}` : 'SELECT CASE'}
+              SELECT CASE
             </div>
           </div>
         </div>
       </div>
-
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {!selectedCase && (
-          <CaseList
-            cases={cases}
-            selectedCase={selectedCase}
-            editingCaseId={editingCaseId}
-            editCaseName={editCaseName}
-            isCreating={isCreating}
-            newCaseName={newCaseName}
-            setEditCaseName={setEditCaseName}
-            setEditingCaseId={setEditingCaseId}
-            setIsCreating={setIsCreating}
-            setNewCaseName={setNewCaseName}
-            handleCaseSelect={handleCaseSelect}
-            handleEditCase={handleEditCase}
-            handleSaveEditCase={handleSaveEditCase}
-            handleDeleteCase={handleDeleteCase}
-            handleCreateCase={handleCreateCase}
-          />
-        )}
-
-        {selectedCase && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <CaseInputPanel
-              selectedCase={selectedCase}
-              inputs={inputs}
-              handleTypeSelect={handleTypeSelect}
-              handleFileChange={handleFileChange}
-              addInput={addInput}
-              removeInput={removeInput}
-              resetAll={resetAll}
-              submitDemo={submitDemo}
-              loading={loading}
-            />
-            <ResultPanel loading={loading} result={result} />
-          </div>
-        )}
+        {/* Bulk run controls */}
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleRunAll}
+            className="flex items-center gap-2 bg-[#23262E] hover:bg-[#2B2E39] border border-[#2B2E39] shadow-sm px-5 py-2 rounded transition-all text-sm font-semibold text-blue-200 tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={cases.length === 0 || bulkLoading}
+          >
+            <span className="inline-block w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+            Run All Cases
+          </button>
+          <button
+            onClick={handleRunSelected}
+            className="flex items-center gap-2 bg-[#1B2B23] hover:bg-[#22342A] border border-[#22342A] shadow-sm px-5 py-2 rounded transition-all text-sm font-semibold text-green-200 tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={selectedCaseIds.length === 0 || bulkLoading}
+          >
+            <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            Run Selected Cases
+          </button>
+          {bulkResult && (
+            <span className="text-xs text-yellow-300 ml-2">
+              {bulkResult === 'done' ? 'Bulk run finished.' : bulkResult}
+            </span>
+          )}
+        </div>
+        <CaseList
+          cases={cases}
+          selectedCase={null}
+          editingCaseId={editingCaseId}
+          editCaseName={editCaseName}
+          isCreating={isCreating}
+          newCaseName={newCaseName}
+          setEditCaseName={setEditCaseName}
+          setEditingCaseId={setEditingCaseId}
+          setIsCreating={setIsCreating}
+          setNewCaseName={setNewCaseName}
+          handleCaseSelect={handleCaseSelect}
+          handleEditCase={handleEditCase}
+          handleSaveEditCase={handleSaveEditCase}
+          handleDeleteCase={handleDeleteCase}
+          handleCreateCase={handleCreateCase}
+          casesLoading={casesLoading}
+          refreshCases={refreshCases}
+          // new props for checkboxes
+          selectedCaseIds={selectedCaseIds}
+          onCaseCheckbox={handleCaseCheckbox}
+        />
       </div>
     </div>
   );

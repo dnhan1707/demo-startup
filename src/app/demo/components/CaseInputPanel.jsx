@@ -1,18 +1,156 @@
-import { FileText, X, Upload, ChevronRight } from 'lucide-react';
+'use client'
+
+import { FileText, X, Upload, ChevronRight, FileDown, Eye } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
+function groupFilesByDate(files) {
+  const groups = {};
+  files.forEach(f => {
+    // Extract timestamp after last underscore, before extension
+    const match = f.filename.match(/_(\d{8}T\d{6})\./);
+    if (match) {
+      const dateHour = match[1].slice(0, 11); // e.g., "20250807T13"
+      if (!groups[dateHour]) groups[dateHour] = [];
+      groups[dateHour].push(f);
+    } else {
+      if (!groups['Other']) groups['Other'] = [];
+      groups['Other'].push(f);
+    }
+  });
+  return groups;
+}
 
 export default function CaseInputPanel({
-  selectedCase, inputs, handleTypeSelect, handleFileChange, addInput, removeInput, resetAll, submitDemo, loading
+  selectedCase, 
+  inputs, 
+  handleTypeSelect, 
+  handleFileChange, 
+  addInput, 
+  removeInput, 
+  resetAll, 
+  submitDemo, 
+  loading, 
+  caseFiles,
+  historyLoading,
+  refreshHistory,
+  isCaseSaved,
+  onSaveCase,
+  manualInput,
+  setManualInput,
+  onRequestChangeCase,
+  saveDisabled = false
 }) {
+  // Separate files by type
+  const pdfFiles = useMemo(() => caseFiles?.filter(f => f.type === 'pdf'), [caseFiles]);
+  const textFiles = useMemo(() => caseFiles?.filter(f => f.type === 'text'), [caseFiles]);
+  const responseFiles = useMemo(() => caseFiles?.filter(f => f.filename.startsWith('response_')), [caseFiles]);
+
+  // Check if there is a previous response
+  const hasPreviousResponse = responseFiles && responseFiles.length > 0;
+
+  // Submission enabled if: at least one uploaded file OR manual input OR history exists
+  const hasUploadedFiles = inputs.some(
+    (input) => input.type === 'upload' && Array.isArray(input.value) && input.value.length > 0
+  );
+  const canSubmit = hasUploadedFiles || manualInput.trim() || (caseFiles && caseFiles.length > 0);
+
+  const groupedFiles = useMemo(() => groupFilesByDate(caseFiles || []), [caseFiles]);
+
+
   return (
     <div className="lg:col-span-2 space-y-6">
+      {/* --- File History Section --- */}
+      <div className="border border-gray-800 bg-gray-900/20 rounded-sm mb-4">
+        <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40 flex items-center justify-between">
+          <h3 className="text-sm font-medium text-gray-300 uppercase tracking-wider">Case File History</h3>
+          {historyLoading && (
+            <span className="flex items-center text-xs text-blue-400">
+              <span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mr-2" />
+              Loading...
+            </span>
+          )}
+          <button
+            onClick={refreshHistory}
+            className="text-xs text-blue-400 hover:underline ml-2"
+            disabled={historyLoading}
+          >
+            Refresh
+          </button>
+        </div>
+        <div className="p-4 space-y-4">
+          {historyLoading ? (
+            <div className="text-xs text-gray-400">Loading history...</div>
+          ) : Object.keys(groupedFiles).length === 0 ? (
+            <div className="text-gray-400 text-xs">No files found for this case.</div>
+          ) : (
+            Object.entries(groupedFiles).map(([dateHour, files]) => (
+              <div key={dateHour} className="mb-2">
+                <div className="font-bold text-xs text-blue-300 mb-1">
+                  {dateHour === 'Other'
+                    ? 'Other Files'
+                    : (() => {
+                        // Format as "YYYY-MM-DD HH:00"
+                        const date = dateHour.slice(0, 4) + '-' + dateHour.slice(4, 6) + '-' + dateHour.slice(6, 8);
+                        const hour = dateHour.slice(9, 11);
+                        return `Date: ${date} ${hour}:00`;
+                      })()
+                  }
+                </div>
+                {files.map(f => (
+                  <div key={f.filename} className="flex items-center space-x-2 text-xs mb-1">
+                    <FileText className="h-4 w-4 text-blue-400" />
+                    <span>{f.filename}</span>
+                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center">
+                      <Eye className="h-4 w-4" /> View
+                    </a>
+                    <a href={f.url} download className="text-green-400 hover:underline flex items-center">
+                      <FileDown className="h-4 w-4" /> Download
+                    </a>
+                  </div>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* --- Warning if solved --- */}
+      {hasPreviousResponse && !isCaseSaved && (
+        <div className="bg-yellow-900/40 border border-yellow-700 text-yellow-300 px-4 py-2 rounded mb-2 text-xs">
+          This case was solved. Are you sure you want to proceed?
+        </div>
+      )}
+
+      {/* --- Manual Input --- */}
+      <div className="mb-4">
+        <label className="block text-xs text-gray-400 mb-1">Manual Input (optional):</label>
+        <textarea
+          className="w-full border border-gray-700 bg-gray-900 text-white rounded px-3 py-2 text-sm"
+          rows={3}
+          value={manualInput}
+          onChange={e => setManualInput(e.target.value)}
+          placeholder="Paste or type claim details here..."
+        />
+      </div>
+
+      {/* --- PDF Upload UI --- */}
       <div className="border border-gray-800 bg-gray-900/20 rounded-sm">
         <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40 flex items-center justify-between">
           <h2 className="text-sm font-medium text-gray-300 uppercase tracking-wider">
-            DATA INPUTS - {selectedCase.title.toUpperCase()}
+            DATA INPUTS - {selectedCase.case_name.toUpperCase()}
           </h2>
+          {onSaveCase && (
+            <button
+              onClick={onSaveCase}
+              className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-sm text-white font-medium"
+              disabled={loading || saveDisabled}
+            >
+              Save Case
+            </button>
+          )}
           <button
-            onClick={resetAll}
-            className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
+            onClick={onRequestChangeCase}
+            className="border border-gray-700 hover:border-gray-600 px-6 py-3 rounded-sm transition-colors text-sm"
           >
             CHANGE CASE
           </button>
@@ -85,11 +223,12 @@ export default function CaseInputPanel({
           </button>
         </div>
       </div>
-      {/* Action Buttons */}
+
+      {/* --- Action Buttons --- */}
       <div className="flex space-x-4">
         <button
-          onClick={submitDemo}
-          disabled={loading}
+          onClick={() => submitDemo({ manualInput })}
+          disabled={loading || !canSubmit}
           className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 px-6 py-3 rounded-sm transition-colors text-sm font-medium"
         >
           {loading ? (
