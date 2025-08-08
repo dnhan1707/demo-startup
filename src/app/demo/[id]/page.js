@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { fetchCases, fetchCaseFiles, saveCase, submitCase } from '../../service/fetchFunctions';
+import { fetchCases, fetchCaseFiles, saveCase, submitCase, fetchLatestResponse } from '../../service/fetchFunctions';
 import CaseInputPanel from '../components/CaseInputPanel';
 import ResultPanel from '../components/ResultPanel';
 
@@ -22,6 +22,7 @@ export default function CaseDemoPage() {
   const [loadingCase, setLoadingCase] = useState(true);
   const [saveDisabled, setSaveDisabled] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [latestResponse, setLatestResponse] = useState(null);
 
   // Only temp case is unsaved
   const isTempCase = id && id.startsWith('temp_');
@@ -39,6 +40,7 @@ export default function CaseDemoPage() {
         });
         setInputs([{ type: null, value: null }]);
         setLoadingCase(false);
+        setLatestResponse(null);
       } else {
         const allCases = await fetchCases();
         setCases(allCases || []);
@@ -46,6 +48,17 @@ export default function CaseDemoPage() {
         setSelectedCase(found || null);
         setInputs(found?.defaultInputs || [{ type: null, value: null }]);
         setLoadingCase(false);
+        // Fetch latest response for this case
+        if (found && found.id) {
+          try {
+            const resp = await fetchLatestResponse(found.id);
+            setLatestResponse(resp);
+          } catch {
+            setLatestResponse(null);
+          }
+        } else {
+          setLatestResponse(null);
+        }
       }
     }
     loadCases();
@@ -111,7 +124,7 @@ export default function CaseDemoPage() {
     router.push('/demo');
   };
 
-  // Submit: disable Save during submit for temp case, after submit Save stays available
+  // Submit: override latestResponse with result from submit
   const submitDemo = async ({ manualInput }) => {
     setLoading(true);
     setResult(null);
@@ -124,6 +137,7 @@ export default function CaseDemoPage() {
         inputs
       });
       setResult(res.result || res);
+      setLatestResponse(res.result || res);
       if (!isTempCase) refreshHistory();
     } catch {
       setResult(null);
@@ -235,7 +249,7 @@ export default function CaseDemoPage() {
             onRequestChangeCase={handleRequestChangeCase}
             saveDisabled={saveDisabled}
           />
-          <ResultPanel loading={loading} result={result} />
+          <ResultPanel loading={loading} result={result || latestResponse} />
         </div>
       </div>
     </div>

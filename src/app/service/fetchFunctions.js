@@ -149,3 +149,10 @@ export async function updateCaseName(case_id, case_name) {
     return data;
 }
 
+export async function fetchLatestResponse(caseId) {
+    const response = await fetch(`${base_url}/case/${caseId}/latest-response`);
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Failed to fetch latest response');
+    return data.response;
+}
+

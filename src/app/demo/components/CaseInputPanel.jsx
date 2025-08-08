@@ -56,6 +56,14 @@ export default function CaseInputPanel({
 
   const groupedFiles = useMemo(() => groupFilesByDate(caseFiles || []), [caseFiles]);
 
+  // Remove a file from a specific input
+  const handleRemoveFile = (inputIdx, fileIdx) => {
+    const updated = [...inputs];
+    if (Array.isArray(updated[inputIdx].value)) {
+      updated[inputIdx].value = updated[inputIdx].value.filter((_, i) => i !== fileIdx);
+      handleFileChange(inputIdx, updated[inputIdx].value);
+    }
+  };
 
   return (
     <div className="lg:col-span-2 space-y-6">
@@ -103,9 +111,9 @@ export default function CaseInputPanel({
                     <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center">
                       <Eye className="h-4 w-4" /> View
                     </a>
-                    <a href={f.url} download className="text-green-400 hover:underline flex items-center">
+                    {/* <a href={f.url} download className="text-green-400 hover:underline flex items-center">
                       <FileDown className="h-4 w-4" /> Download
-                    </a>
+                    </a> */}
                   </div>
                 ))}
               </div>
@@ -206,6 +214,14 @@ export default function CaseInputPanel({
                             <span><FileText className="h-4 w-4 text-blue-400" /></span>
                             <span>{file.name}</span>
                             <span className="text-xs text-gray-500">({(file.size / 1024).toFixed(1)} KB)</span>
+                            <button
+                              type="button"
+                              className="ml-2 text-red-400 hover:text-red-300"
+                              onClick={() => handleRemoveFile(index, i)}
+                              title="Remove file"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
                           </div>
                         ))}
                       </div>
