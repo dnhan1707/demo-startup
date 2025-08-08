@@ -5,7 +5,8 @@ export default function CaseList({
   setEditCaseName, setEditingCaseId, setIsCreating, setNewCaseName,
   handleCaseSelect, handleEditCase, handleSaveEditCase, handleDeleteCase, handleCreateCase,
   casesLoading, refreshCases,
-  selectedCaseIds = [], onCaseCheckbox = () => {}
+  selectedCaseIds = [], onCaseCheckbox = () => {},
+  editLoading = false
 }) {
   return (
     <div className="mb-8">
@@ -58,7 +59,13 @@ export default function CaseList({
                       onChange={e => setEditCaseName(e.target.value)}
                       className="bg-gray-900 border border-gray-700 text-white px-2 py-1 rounded-sm flex-1"
                     />
-                    <button onClick={() => handleSaveEditCase(caseData.id)} className="text-green-400"><Save className="h-4 w-4" /></button>
+                    <button
+                      onClick={() => handleSaveEditCase(caseData.id)}
+                      className="text-green-400"
+                      disabled={editLoading}
+                    >
+                      {editLoading ? <span className="animate-spin w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full inline-block" /> : <Save className="h-4 w-4" />}
+                    </button>
                     <button onClick={() => setEditingCaseId(null)} className="text-gray-400"><X className="h-4 w-4" /></button>
                   </div>
                 ) : (

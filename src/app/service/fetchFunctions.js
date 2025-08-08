@@ -125,3 +125,27 @@ export async function bulkSubmitCases(ids) {
     return await response.json();
 }
 
+export async function deleteCases(caseIds) {
+    const response = await fetch(`${base_url}/case/`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(caseIds)
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Failed to delete case');
+    return data;
+}
+
+export async function updateCaseName(case_id, case_name) {
+    const formData = new FormData();
+    formData.append('case_id', case_id);
+    formData.append('case_name', case_name);
+    const response = await fetch(`${base_url}/case/`, {
+        method: 'PUT',
+        body: formData
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Failed to update case');
+    return data;
+}
+

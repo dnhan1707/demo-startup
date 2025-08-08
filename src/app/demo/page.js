@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { fetchCases, bulkSubmitCases } from '../service/fetchFunctions';
+import { fetchCases, bulkSubmitCases, deleteCases, updateCaseName } from '../service/fetchFunctions';
 import CaseList from './components/CaseList';
 import { useRouter } from 'next/navigation';
 import { useState as useReactState } from 'react';
@@ -17,6 +17,9 @@ export default function DemoPage() {
   const [selectedCaseIds, setSelectedCaseIds] = useState([]);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkResult, setBulkResult] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ open: false, caseId: null });
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
 
   const router = useRouter();
 
@@ -53,16 +56,36 @@ export default function DemoPage() {
     setEditingCaseId(caseId);
     setEditCaseName(title);
   };
-  const handleSaveEditCase = (caseId) => {
-    setEditingCaseId(null);
-    setEditCaseName('');
-    // Optionally send to backend here
+
+  const handleSaveEditCase = async (caseId) => {
+    setEditLoading(true);
+    try {
+      await updateCaseName(caseId, editCaseName);
+      setEditingCaseId(null);
+      setEditCaseName('');
+      await refreshCases();
+    } catch (e) {
+      alert('Failed to update case');
+    }
+    setEditLoading(false);
   };
 
   // CRUD: Delete case (local only, for demo)
   const handleDeleteCase = (caseId) => {
-    // Optionally send to backend here
-    refreshCases();
+    setDeleteModal({ open: true, caseId });
+  };
+
+  const confirmDeleteCase = async () => {
+    setDeleteLoading(true);
+    try {
+      await deleteCases([deleteModal.caseId]);
+      setDeleteModal({ open: false, caseId: null });
+      await refreshCases();
+    } catch (e) {
+      alert('Failed to delete case');
+      setDeleteModal({ open: false, caseId: null });
+    }
+    setDeleteLoading(false);
   };
 
   const handleCaseSelect = (caseData) => {
@@ -115,6 +138,38 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-black text-white font-mono">
+      {/* Delete confirmation modal */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#181A20] border border-gray-700 shadow-2xl rounded-lg w-full max-w-sm p-0 overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-700 flex items-center">
+              <span className="w-2 h-2 bg-red-400 rounded-full mr-2 animate-pulse" />
+              <h2 className="text-base font-semibold text-gray-100 tracking-wide">Delete Case</h2>
+            </div>
+            <div className="px-6 py-5">
+              <p className="mb-4 text-gray-300 text-sm">
+                Are you sure you want to delete this case?
+              </p>
+              <div className="flex justify-end space-x-2">
+                <button
+                  className="px-4 py-2 rounded bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700 transition"
+                  onClick={() => setDeleteModal({ open: false, caseId: null })}
+                  disabled={deleteLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-gradient-to-r from-red-800 to-red-600 text-white font-semibold border border-red-900 hover:from-red-700 hover:to-red-500 transition"
+                  onClick={confirmDeleteCase}
+                  disabled={deleteLoading}
+                >
+                  {deleteLoading ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Loading overlay when redirecting or bulk running */}
       {(redirecting || bulkLoading) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
@@ -182,9 +237,9 @@ export default function DemoPage() {
           handleCreateCase={handleCreateCase}
           casesLoading={casesLoading}
           refreshCases={refreshCases}
-          // new props for checkboxes
           selectedCaseIds={selectedCaseIds}
           onCaseCheckbox={handleCaseCheckbox}
+          editLoading={editLoading}
         />
       </div>
     </div>
