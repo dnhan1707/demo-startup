@@ -104,16 +104,16 @@ export default function CaseInputPanel({
                       })()
                   }
                 </div>
-                {files.map(f => (
-                  <div key={f.filename} className="flex items-center space-x-2 text-xs mb-1">
+                {files.map((f, idx) => (
+                  <div key={f.filename + '_' + idx} className="flex items-center space-x-2 text-xs mb-1">
                     <FileText className="h-4 w-4 text-blue-400" />
                     <span>{f.filename}</span>
-                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center">
+                    {/* <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center">
                       <Eye className="h-4 w-4" /> View
-                    </a>
-                    {/* <a href={f.url} download className="text-green-400 hover:underline flex items-center">
-                      <FileDown className="h-4 w-4" /> Download
                     </a> */}
+                    <a href={f.url} download className="text-green-400 hover:underline flex items-center">
+                      <FileDown className="h-4 w-4" /> Download
+                    </a>
                   </div>
                 ))}
               </div>
@@ -210,7 +210,10 @@ export default function CaseInputPanel({
                     {input.value && input.value.length > 0 && (
                       <div className="space-y-1">
                         {input.value.map((file, i) => (
-                          <div key={i} className="flex items-center space-x-2 text-sm text-gray-300 bg-gray-800/50 px-3 py-2 rounded-sm">
+                          <div
+                            key={file.name + '_' + i} // <-- ensure uniqueness even for duplicate filenames
+                            className="flex items-center space-x-2 text-sm text-gray-300 bg-gray-800/50 px-3 py-2 rounded-sm"
+                          >
                             <span><FileText className="h-4 w-4 text-blue-400" /></span>
                             <span>{file.name}</span>
                             <span className="text-xs text-gray-500">({(file.size / 1024).toFixed(1)} KB)</span>
