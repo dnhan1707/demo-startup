@@ -23,13 +23,14 @@ export default function CaseDemoPage() {
   const [saveDisabled, setSaveDisabled] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [latestResponse, setLatestResponse] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Only temp case is unsaved
   const isTempCase = id && id.startsWith('temp_');
   const tempCaseName = searchParams?.get('name') || 'New Case';
 
   useEffect(() => {
-    async function loadCases() {
+    async function loadCasesAndHistory() {
       setLoadingCase(true);
       if (isTempCase) {
         setSelectedCase({
@@ -41,6 +42,7 @@ export default function CaseDemoPage() {
         setInputs([{ type: null, value: null }]);
         setLoadingCase(false);
         setLatestResponse(null);
+        setCaseFiles([]); // Ensure history is cleared for new case
       } else {
         const allCases = await fetchCases();
         setCases(allCases || []);
@@ -56,24 +58,28 @@ export default function CaseDemoPage() {
           } catch {
             setLatestResponse(null);
           }
+          // Always fetch history after loading case
+          await refreshHistory(found.id); // make sure we fetch with the actual id
         } else {
           setLatestResponse(null);
+          setCaseFiles([]);
         }
       }
     }
-    loadCases();
+    loadCasesAndHistory();
   }, [id, isTempCase, tempCaseName]);
 
-  useEffect(() => {
-    if (!isTempCase && id) {
-      refreshHistory();
-    }
-  }, [id, isTempCase]);
+  // useEffect(() => {
+  //   if (!isTempCase && id) {
+  //     refreshHistory();
+  //   }
+  // }, [id, isTempCase]);
 
-  const refreshHistory = async () => {
+  const refreshHistory = async (overrideId) => {
     setHistoryLoading(true);
     try {
-      const files = await fetchCaseFiles(id);
+      const effectiveId = overrideId || id;
+      const files = await fetchCaseFiles(effectiveId);
       setCaseFiles(files || []);
     } catch {
       setCaseFiles([]);
@@ -131,14 +137,25 @@ export default function CaseDemoPage() {
     if (isTempCase) setSaveDisabled(true);
     try {
       const res = await submitCase({
-        case_id: selectedCase?.id,
+        case_id: isTempCase ? '' : selectedCase?.id,
         case_name: selectedCase?.case_name,
         manual_input: manualInput,
         inputs
       });
       setResult(res.result || res);
       setLatestResponse(res.result || res);
-      if (!isTempCase) refreshHistory();
+      setIsSubmitted(true);
+
+      // Use case_id from backend, fall back to new_id if present
+      const newId = res.case_id || res.new_id;
+
+      if (newId && newId !== id) {
+        setSelectedCase(prev => ({ ...(prev || {}), id: newId }));
+        router.replace(`/demo/${newId}`);
+        await refreshHistory(newId);
+      } else {
+        await refreshHistory(newId || id);
+      }
     } catch {
       setResult(null);
     } finally {
@@ -149,7 +166,8 @@ export default function CaseDemoPage() {
 
   // Change case handler for unsaved temp case
   const handleRequestChangeCase = () => {
-    if (isTempCase) {
+    // Only show modal if temp case and not submitted
+    if (isTempCase && !isSubmitted) {
       setShowUnsavedModal(true);
     } else {
       resetAll();
@@ -242,12 +260,12 @@ export default function CaseDemoPage() {
             caseFiles={caseFiles}
             historyLoading={historyLoading}
             refreshHistory={refreshHistory}
-            isCaseSaved={!isTempCase}
-            onSaveCase={isTempCase ? handleSaveCase : undefined}
+            isCaseSaved={!isTempCase || isSubmitted}
+            onSaveCase={isTempCase && !isSubmitted ? handleSaveCase : undefined}
             manualInput={manualInput}
             setManualInput={setManualInput}
             onRequestChangeCase={handleRequestChangeCase}
-            saveDisabled={saveDisabled}
+            saveDisabled={saveDisabled || isSubmitted}
           />
           <ResultPanel loading={loading} result={result || latestResponse} />
         </div>
@@ -255,3 +273,4 @@ export default function CaseDemoPage() {
     </div>
   );
 }
+

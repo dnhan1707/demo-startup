@@ -65,6 +65,9 @@ export default function CaseInputPanel({
     }
   };
 
+  // Disable all input areas while loading
+  const inputDisabled = loading;
+
   return (
     <div className="lg:col-span-2 space-y-6">
       {/* --- File History Section --- */}
@@ -138,11 +141,12 @@ export default function CaseInputPanel({
           value={manualInput}
           onChange={e => setManualInput(e.target.value)}
           placeholder="Paste or type claim details here..."
+          disabled={inputDisabled}
         />
       </div>
 
       {/* --- PDF Upload UI --- */}
-      <div className="border border-gray-800 bg-gray-900/20 rounded-sm">
+      <div className={`border border-gray-800 bg-gray-900/20 rounded-sm ${inputDisabled ? 'opacity-60 pointer-events-none' : ''}`}>
         <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40 flex items-center justify-between">
           <h2 className="text-sm font-medium text-gray-300 uppercase tracking-wider">
             DATA INPUTS - {selectedCase.case_name.toUpperCase()}
@@ -159,6 +163,7 @@ export default function CaseInputPanel({
           <button
             onClick={onRequestChangeCase}
             className="border border-gray-700 hover:border-gray-600 px-6 py-3 rounded-sm transition-colors text-sm"
+            disabled={loading}
           >
             CHANGE CASE
           </button>
@@ -265,6 +270,7 @@ export default function CaseInputPanel({
         <button
           onClick={resetAll}
           className="border border-gray-700 hover:border-gray-600 px-6 py-3 rounded-sm transition-colors text-sm"
+          disabled={loading}
         >
           RESET
         </button>
