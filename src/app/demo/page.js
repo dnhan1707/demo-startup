@@ -196,7 +196,7 @@ export default function DemoPage() {
       </div>
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Bulk run controls */}
-        <div className="mb-6 flex flex-wrap items-center gap-3">
+        {/* <div className="mb-6 flex flex-wrap items-center gap-3">
           <button
             onClick={handleRunAll}
             className="flex items-center gap-2 bg-[#23262E] hover:bg-[#2B2E39] border border-[#2B2E39] shadow-sm px-5 py-2 rounded transition-all text-sm font-semibold text-blue-200 tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
@@ -218,7 +218,7 @@ export default function DemoPage() {
               {bulkResult === 'done' ? 'Bulk run finished.' : bulkResult}
             </span>
           )}
-        </div>
+        </div> */}
         <CaseList
           cases={cases}
           selectedCase={null}
