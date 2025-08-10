@@ -16,10 +16,14 @@ export async function fetchCases() {
 
 export async function fetchCaseFiles(caseId) {
     try {
-        const response = await fetch(`${base_url}/case/${caseId}`);
+        const url = `${base_url}/case/${caseId}`;
+        const response = await fetch(url, {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' }
+        });
         if (response.ok) {
             const data = await response.json();
-            return data.files;
+            return data.files || [];
         }
         return [];
     } catch {

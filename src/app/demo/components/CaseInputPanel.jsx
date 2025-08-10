@@ -1,7 +1,8 @@
 'use client'
 
-import { FileText, X, Upload, ChevronRight, FileDown, Eye } from 'lucide-react';
+import { FileText, X, Upload, ChevronRight, FileDown } from 'lucide-react';
 import { useState, useMemo } from 'react';
+import { saveCase } from '../../service/fetchFunctions';
 
 function groupFilesByDate(files) {
   const groups = {};
@@ -38,7 +39,8 @@ export default function CaseInputPanel({
   manualInput,
   setManualInput,
   onRequestChangeCase,
-  saveDisabled = false
+  saveDisabled = false,
+  onClearInputs // <-- new optional callback
 }) {
   // Separate files by type
   const pdfFiles = useMemo(() => caseFiles?.filter(f => f.type === 'pdf'), [caseFiles]);
@@ -54,6 +56,12 @@ export default function CaseInputPanel({
   );
   const canSubmit = hasUploadedFiles || manualInput.trim() || (caseFiles && caseFiles.length > 0);
 
+  // Enable Save only when there are new uploads or manual input
+  const canSave = hasUploadedFiles || Boolean(manualInput && manualInput.trim());
+
+  // Local saving state to show overlay and disable UI
+  const [saving, setSaving] = useState(false);
+
   const groupedFiles = useMemo(() => groupFilesByDate(caseFiles || []), [caseFiles]);
 
   // Remove a file from a specific input
@@ -65,11 +73,52 @@ export default function CaseInputPanel({
     }
   };
 
-  // Disable all input areas while loading
-  const inputDisabled = loading;
+  // Disable all input areas while loading/saving
+  const inputDisabled = loading || saving;
+
+  // Wrapper to handle save; uses parent if provided, otherwise saves here (with case_id for existing cases)
+  const handleSaveClick = async () => {
+    if (!canSave || saving) return;
+    setSaving(true);
+    try {
+      if (onSaveCase) {
+        await onSaveCase();
+        // Clear inputs after successful parent save
+        onClearInputs?.();
+      } else {
+        const isTemp = selectedCase?.id?.startsWith?.('temp_');
+        await saveCase({
+          case_id: isTemp ? '' : selectedCase?.id || '',
+          case_name: selectedCase?.case_name,
+          manual_input: manualInput,
+          inputs
+        });
+        // Refresh history after saving
+        await refreshHistory?.();
+        // Clear inputs after local save
+        onClearInputs?.();
+      }
+    } catch (e) {
+      // optionally surface error UI
+      console.error('Save failed', e);
+      alert('Failed to save case');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="lg:col-span-2 space-y-6">
+      {/* Saving Overlay */}
+      {saving && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="flex flex-col items-center">
+            <div className="w-8 h-8 border-4 border-green-400 border-t-transparent rounded-full animate-spin mb-4" />
+            <div className="text-lg text-green-200 font-semibold">Saving case...</div>
+          </div>
+        </div>
+      )}
+
       {/* --- File History Section --- */}
       <div className="border border-gray-800 bg-gray-900/20 rounded-sm mb-4">
         <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40 flex items-center justify-between">
@@ -81,9 +130,9 @@ export default function CaseInputPanel({
             </span>
           )}
           <button
-            onClick={refreshHistory}
+            onClick={() => refreshHistory()}
             className="text-xs text-blue-400 hover:underline ml-2"
-            disabled={historyLoading}
+            disabled={historyLoading || saving}
           >
             Refresh
           </button>
@@ -110,12 +159,9 @@ export default function CaseInputPanel({
                 {files.map((f, idx) => (
                   <div key={f.filename + '_' + idx} className="flex items-center space-x-2 text-xs mb-1">
                     <FileText className="h-4 w-4 text-blue-400" />
-                    <span>{f.filename}</span>
-                    {/* <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center">
-                      <Eye className="h-4 w-4" /> View
-                    </a> */}
+                    <span className="truncate">{f.filename}</span>
                     <a href={f.url} download className="text-green-400 hover:underline flex items-center">
-                      <FileDown className="h-4 w-4" /> Download
+                      <FileDown className="h-4 w-4 mr-1" />
                     </a>
                   </div>
                 ))}
@@ -151,22 +197,7 @@ export default function CaseInputPanel({
           <h2 className="text-sm font-medium text-gray-300 uppercase tracking-wider">
             DATA INPUTS - {selectedCase.case_name.toUpperCase()}
           </h2>
-          {onSaveCase && (
-            <button
-              onClick={onSaveCase}
-              className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-sm text-white font-medium"
-              disabled={loading || saveDisabled}
-            >
-              Save Case
-            </button>
-          )}
-          <button
-            onClick={onRequestChangeCase}
-            className="border border-gray-700 hover:border-gray-600 px-6 py-3 rounded-sm transition-colors text-sm"
-            disabled={loading}
-          >
-            CHANGE CASE
-          </button>
+          {/* Removed the CHANGE CASE button; back is now in the header */}
         </div>
         <div className="p-6 space-y-6">
           {inputs.map((input, index) => (
@@ -250,9 +281,22 @@ export default function CaseInputPanel({
 
       {/* --- Action Buttons --- */}
       <div className="flex space-x-4">
+        {/* Save enabled only when user added files or typed manual input */}
+        <button
+          onClick={handleSaveClick}
+          className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 px-6 py-3 rounded-sm transition-colors text-sm font-medium"
+          disabled={loading || saving || !canSave}
+          title={
+            canSave
+              ? 'Save current inputs/files'
+              : 'Add files or manual input to enable save'
+          }
+        >
+          <span>SAVE CASE</span>
+        </button>
         <button
           onClick={() => submitDemo({ manualInput })}
-          disabled={loading || !canSubmit}
+          disabled={loading || saving || !canSubmit}
           className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 px-6 py-3 rounded-sm transition-colors text-sm font-medium"
         >
           {loading ? (
@@ -270,7 +314,7 @@ export default function CaseInputPanel({
         <button
           onClick={resetAll}
           className="border border-gray-700 hover:border-gray-600 px-6 py-3 rounded-sm transition-colors text-sm"
-          disabled={loading}
+          disabled={loading || saving}
         >
           RESET
         </button>

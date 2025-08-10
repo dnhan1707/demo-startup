@@ -1,4 +1,4 @@
-import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { Edit, Trash2, Save, X } from 'lucide-react';
 
 export default function CaseList({
   cases, selectedCase, editingCaseId, editCaseName, isCreating, newCaseName,

@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { fetchCases, fetchCaseFiles, saveCase, submitCase, fetchLatestResponse } from '../../service/fetchFunctions';
 import CaseInputPanel from '../components/CaseInputPanel';
 import ResultPanel from '../components/ResultPanel';
+import { ArrowLeft } from 'lucide-react';
 
 export default function CaseDemoPage() {
   const { id } = useParams();
@@ -24,6 +25,7 @@ export default function CaseDemoPage() {
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [latestResponse, setLatestResponse] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [recentLoading, setRecentLoading] = useState(false);
 
   // Only temp case is unsaved
   const isTempCase = id && id.startsWith('temp_');
@@ -50,16 +52,10 @@ export default function CaseDemoPage() {
         setSelectedCase(found || null);
         setInputs(found?.defaultInputs || [{ type: null, value: null }]);
         setLoadingCase(false);
-        // Fetch latest response for this case
         if (found && found.id) {
-          try {
-            const resp = await fetchLatestResponse(found.id);
-            setLatestResponse(resp);
-          } catch {
-            setLatestResponse(null);
-          }
-          // Always fetch history after loading case
-          await refreshHistory(found.id); // make sure we fetch with the actual id
+          // Stop auto-fetching latest response on load
+          setLatestResponse(null);
+          await refreshHistory(found.id);
         } else {
           setLatestResponse(null);
           setCaseFiles([]);
@@ -69,22 +65,23 @@ export default function CaseDemoPage() {
     loadCasesAndHistory();
   }, [id, isTempCase, tempCaseName]);
 
-  // useEffect(() => {
-  //   if (!isTempCase && id) {
-  //     refreshHistory();
-  //   }
-  // }, [id, isTempCase]);
-
   const refreshHistory = async (overrideId) => {
     setHistoryLoading(true);
     try {
-      const effectiveId = overrideId || id;
+      // Ensure we only accept a string id; ignore click events or falsy values
+      const effectiveId = (typeof overrideId === 'string' && overrideId) ? overrideId : id;
       const files = await fetchCaseFiles(effectiveId);
       setCaseFiles(files || []);
     } catch {
       setCaseFiles([]);
     }
     setHistoryLoading(false);
+  };
+
+  // Helper: clear all user-added inputs and manual text
+  const clearUserInputs = () => {
+    setInputs([{ type: null, value: null }]);
+    setManualInput('');
   };
 
   // Save: always use empty case_id for temp/unsaved case
@@ -97,7 +94,9 @@ export default function CaseDemoPage() {
         manual_input: manualInput,
         inputs
       });
-      router.push('/demo');
+      // Clear inputs after successful save
+      clearUserInputs();
+      // router.push('/demo');
     } catch {
       alert('Failed to save case');
     }
@@ -127,7 +126,23 @@ export default function CaseDemoPage() {
   };
 
   const resetAll = () => {
-    router.push('/demo');
+    // Clear inputs before navigating away
+    clearUserInputs();
+    // router.push('/demo');
+  };
+
+  // Fetch latest response only when user asks
+  const fetchRecentAnalysis = async () => {
+    if (!selectedCase?.id) return;
+    setRecentLoading(true);
+    try {
+      const resp = await fetchLatestResponse(selectedCase.id);
+      setLatestResponse(resp);
+      // do not clear 'result'; ResultPanel prefers result if present (after execute)
+    } catch {
+      setLatestResponse(null);
+    }
+    setRecentLoading(false);
   };
 
   // Submit: override latestResponse with result from submit
@@ -145,6 +160,9 @@ export default function CaseDemoPage() {
       setResult(res.result || res);
       setLatestResponse(res.result || res);
       setIsSubmitted(true);
+
+      // Remove all user-added inputs after response is back
+      clearUserInputs();
 
       // Use case_id from backend, fall back to new_id if present
       const newId = res.case_id || res.new_id;
@@ -236,6 +254,15 @@ export default function CaseDemoPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
+              {/* Back to list button (top-left) */}
+              <button
+                onClick={handleRequestChangeCase}
+                className="flex items-center gap-2 text-sm text-gray-300 hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Go Back</span>
+              </button>
+              {/* Status + Title */}
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               <h1 className="text-xl font-medium">CLAIMS DECISION ENGINE</h1>
             </div>
@@ -266,8 +293,15 @@ export default function CaseDemoPage() {
             setManualInput={setManualInput}
             onRequestChangeCase={handleRequestChangeCase}
             saveDisabled={saveDisabled || isSubmitted}
+            // New: let panel clear inputs after its own save
+            onClearInputs={clearUserInputs}
           />
-          <ResultPanel loading={loading} result={result || latestResponse} />
+          <ResultPanel
+            loading={loading}
+            result={result || latestResponse}
+            onFetchLatest={fetchRecentAnalysis}
+            recentLoading={recentLoading}
+          />
         </div>
       </div>
     </div>

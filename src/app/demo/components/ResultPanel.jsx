@@ -1,6 +1,6 @@
 import { CheckCircle, AlertCircle, X } from 'lucide-react';
 
-export default function ResultPanel({ loading, result }) {
+export default function ResultPanel({ loading, result, onFetchLatest, recentLoading }) {
     
     if (result && typeof result === 'string') {
         try {
@@ -31,12 +31,33 @@ export default function ResultPanel({ loading, result }) {
                 <span className="text-gray-400">ML MODELS</span>
                 <span className="text-green-400">LOADED</span>
             </div>
-            <div className="flex items-center justify-between text-sm">
+            {/* <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-400">QUEUE</span>
                 <span className="text-gray-300">0 PENDING</span>
-            </div>
+            </div> */}
             </div>
         </div>
+
+        {/* Recent Analysis Fetch Trigger */}
+        {!loading && !result && (
+            <div className="border border-gray-800 bg-gray-900/20 rounded-sm">
+                <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40">
+                    <h3 className="text-sm font-medium text-gray-300 uppercase tracking-wider">
+                        RECENT ANALYSIS
+                    </h3>
+                </div>
+                <div className="p-4">
+                    <button
+                        onClick={onFetchLatest}
+                        disabled={recentLoading}
+                        className="text-sm px-4 py-2 rounded-sm bg-[#23262E] border border-[#2B2E39] hover:bg-[#2B2E39] disabled:opacity-60"
+                    >
+                        {recentLoading ? 'Fetching...' : 'See the recent analysis'}
+                    </button>
+                </div>
+            </div>
+        )}
+
         {/* Results */}
         {loading && (
             <div className="border border-gray-800 bg-gray-900/20 rounded-sm">
