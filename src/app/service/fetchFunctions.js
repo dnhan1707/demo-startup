@@ -160,3 +160,38 @@ export async function fetchLatestResponse(caseId) {
     return data.response;
 }
 
+// New: v2 async bulk submit
+export async function submitBulkCasesV2(caseIds) {
+    const resp = await fetch(`${base_url}/case/v2/submit/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ case_ids: caseIds })
+    });
+    if (resp.status !== 202) {
+        let msg = `Unexpected status ${resp.status}`;
+        try { const j = await resp.json(); if (j?.error) msg = j.error; } catch {}
+        throw new Error(msg);
+    }
+    const data = await resp.json();
+    return data?.accepted || [];
+}
+
+// New: batch task status polling
+export async function fetchTasksStatus(taskIds) {
+    const resp = await fetch(`${base_url}/case/tasks/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_ids: taskIds })
+    });
+    if (!resp.ok) throw new Error(`Status poll failed ${resp.status}`);
+    const data = await resp.json();
+    return data?.results || [];
+}
+
+// Optional: get single task by id
+export async function fetchTaskById(taskId) {
+    const resp = await fetch(`${base_url}/case/tasks/${taskId}`);
+    if (!resp.ok) throw new Error(`Task fetch failed ${resp.status}`);
+    return await resp.json();
+}
+
