@@ -159,23 +159,6 @@ export default function CaseList({
                 Loading...
               </span>
             )}
-            {/* Bulk run controls */}
-            {/* <button
-              onClick={runSelected}
-              className="text-xs text-blue-300 hover:underline inline-flex items-center gap-1 disabled:opacity-50"
-              disabled={casesLoading || selectedCaseIds.length === 0 || hasActiveTasks}
-              title="Run Selected"
-            >
-              <Play className="h-3 w-3" /> Run Selected
-            </button>
-            <button
-              onClick={runAll}
-              className="text-xs text-blue-300 hover:underline inline-flex items-center gap-1 disabled:opacity-50"
-              disabled={casesLoading || cases.length === 0 || hasActiveTasks}
-              title="Run All"
-            >
-              <PlayCircle className="h-3 w-3" /> Run All
-            </button> */}
             {Object.keys(tasks).length > 0 && (
               <button
                 onClick={clearFinished}
