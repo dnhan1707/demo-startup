@@ -189,6 +189,7 @@ export default function CaseDemoPage() {
       setShowUnsavedModal(true);
     } else {
       resetAll();
+      router.push('/demo'); // navigate back to list
     }
   };
 
@@ -231,6 +232,7 @@ export default function CaseDemoPage() {
                   onClick={() => {
                     setShowUnsavedModal(false);
                     resetAll();
+                    router.push('/demo'); // leave without saving -> go back
                   }}
                 >
                   Leave Without Saving
@@ -240,6 +242,7 @@ export default function CaseDemoPage() {
                   onClick={async () => {
                     await handleSaveCase();
                     setShowUnsavedModal(false);
+                    router.push('/demo'); // save, then go back
                   }}
                   disabled={saveDisabled}
                 >
