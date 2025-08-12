@@ -85,7 +85,7 @@ export default function CaseList({
   // Start/stop polling
   useEffect(() => {
     if (hasActiveTasks && !pollingRef.current) {
-      pollingRef.current = setInterval(pollTasks, 3000);
+      pollingRef.current = setInterval(pollTasks, 2000);
     }
     if (!hasActiveTasks && pollingRef.current) {
       clearInterval(pollingRef.current);
