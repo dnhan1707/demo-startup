@@ -114,20 +114,20 @@ export default function CaseList({
   const renderStatusChip = (t) => {
     if (!t) return null;
     const base = 'px-2 py-0.5 rounded-sm border text-[10px] inline-flex items-center gap-1';
-    if (t.state === 'PENDING') {
+    if (t.state === 'PENDING' || t.state === 'RUNNING') {
       return (
         <span className={`${base} bg-yellow-900/40 text-yellow-300 border-yellow-700`}>
-          <Clock className="h-3 w-3" /> Queued
+          <Clock className="h-3 w-3" /> In Progress
         </span>
       );
     }
-    if (t.state === 'STARTED' || t.state === 'PROGRESS') {
-      return (
-        <span className={`${base} bg-blue-900/40 text-blue-300 border-blue-700`}>
-          <Loader2 className="h-3 w-3 animate-spin" /> Running{t?.meta?.step ? `: ${t.meta.step}` : ''}
-        </span>
-      );
-    }
+    // if (t.state === 'STARTED' || t.state === 'PROGRESS') {
+    //   return (
+    //     <span className={`${base} bg-blue-900/40 text-blue-300 border-blue-700`}>
+    //       <Loader2 className="h-3 w-3 animate-spin" /> Running{t?.meta?.step ? `: ${t.meta.step}` : ''}
+    //     </span>
+    //   );
+    // }
     if (t.state === 'SUCCESS') {
       return (
         <span className={`${base} bg-green-900/40 text-green-300 border-green-700`}>
