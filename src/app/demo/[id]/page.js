@@ -169,7 +169,7 @@ export default function CaseDemoPage() {
 
       if (newId && newId !== id) {
         setSelectedCase(prev => ({ ...(prev || {}), id: newId }));
-        router.replace(`/demo/${newId}`);
+        // router.replace(`/demo/${newId}`);
         await refreshHistory(newId);
       } else {
         await refreshHistory(newId || id);
