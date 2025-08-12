@@ -96,7 +96,7 @@ export default function CaseDemoPage() {
       });
       // Clear inputs after successful save
       clearUserInputs();
-      // router.push('/demo');
+      router.push('/demo');
     } catch {
       alert('Failed to save case');
     }
