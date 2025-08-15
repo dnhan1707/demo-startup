@@ -1,9 +1,10 @@
-const base_url = process.env.NEXT_PUBLIC_BASE_URL
-
-
 export async function fetchCases() {
     try {
-        const response = await fetch(`${base_url}/case`);
+        const response = await fetch('/api/cases', {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         if (response.ok) {
             const data = await response.json();
             return data.result;
@@ -16,10 +17,11 @@ export async function fetchCases() {
 
 export async function fetchCaseFiles(caseId) {
     try {
-        const url = `${base_url}/case/${caseId}`;
-        const response = await fetch(url, {
+        const response = await fetch(`/api/cases/${caseId}`, {
             cache: 'no-store',
-            headers: { 'Cache-Control': 'no-cache' }
+            headers: { 
+                'Cache-Control': 'no-cache'
+            }
         });
         if (response.ok) {
             const data = await response.json();
@@ -45,9 +47,9 @@ export async function saveCase({ case_id, case_name, manual_input, inputs }) {
             });
         }
     });
-    const response = await fetch(`${base_url}/case/save`, {
+    const response = await fetch('/api/cases/save', {
         method: 'POST',
-        body: formData,
+        body: formData
     });
     const data = await response.json();
     if (!data.success) throw new Error(data.error || 'Failed to save case');
@@ -68,25 +70,24 @@ export async function submitCase({ case_id, case_name, manual_input, inputs }) {
             });
         }
     });
-    const response = await fetch(`${base_url}/case/submit`, {
+    const response = await fetch('/api/cases/submit', {
         method: 'POST',
-        body: formData,
+        body: formData
     });
     const data = await response.json();
     return data;
 }
 
-
 export async function fetchResponse(formData) {
     try {
-        const response = await fetch(`${base_url}/model`, {
+        const response = await fetch('/api/model', {
             method: 'POST',
-            body: formData 
+            body: formData
         });
 
         if (response.ok) {
             const data = await response.json();
-            return data.result; // Extract the result field
+            return data.result;
         } else {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -96,10 +97,9 @@ export async function fetchResponse(formData) {
     }
 }
 
-
 export async function sendEmail(infor) {
     try {
-        const response = await fetch(`${base_url}/email`, {
+        const response = await fetch('/api/email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -120,9 +120,11 @@ export async function sendEmail(infor) {
 }
 
 export async function bulkSubmitCases(ids) {
-    const response = await fetch(`${base_url}/case/submit/bulk`, {
+    const response = await fetch('/api/cases/submit/bulk', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify(ids)
     });
     if (!response.ok) throw new Error('Bulk submit failed');
@@ -130,9 +132,11 @@ export async function bulkSubmitCases(ids) {
 }
 
 export async function deleteCases(caseIds) {
-    const response = await fetch(`${base_url}/case/`, {
+    const response = await fetch('/api/cases/', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify(caseIds)
     });
     const data = await response.json();
@@ -144,7 +148,7 @@ export async function updateCaseName(case_id, case_name) {
     const formData = new FormData();
     formData.append('case_id', case_id);
     formData.append('case_name', case_name);
-    const response = await fetch(`${base_url}/case/`, {
+    const response = await fetch('/api/cases/', {
         method: 'PUT',
         body: formData
     });
@@ -154,17 +158,18 @@ export async function updateCaseName(case_id, case_name) {
 }
 
 export async function fetchLatestResponse(caseId) {
-    const response = await fetch(`${base_url}/case/${caseId}/latest-response`);
+    const response = await fetch(`/api/cases/${caseId}/latest-response`);
     const data = await response.json();
     if (!data.success) throw new Error(data.error || 'Failed to fetch latest response');
     return data.response;
 }
 
-// New: v2 async bulk submit
 export async function submitBulkCasesV2(caseIds) {
-    const resp = await fetch(`${base_url}/case/v2/submit/bulk`, {
+    const resp = await fetch('/api/cases/v2/submit/bulk', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ case_ids: caseIds })
     });
     if (resp.status !== 202) {
@@ -176,11 +181,12 @@ export async function submitBulkCasesV2(caseIds) {
     return data?.accepted || [];
 }
 
-// New: batch task status polling
 export async function fetchTasksStatus(taskIds) {
-    const resp = await fetch(`${base_url}/case/tasks/status`, {
+    const resp = await fetch('/api/cases/tasks/status', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ task_ids: taskIds })
     });
     if (!resp.ok) throw new Error(`Status poll failed ${resp.status}`);
@@ -188,10 +194,35 @@ export async function fetchTasksStatus(taskIds) {
     return data?.results || [];
 }
 
-// Optional: get single task by id
 export async function fetchTaskById(taskId) {
-    const resp = await fetch(`${base_url}/case/tasks/${taskId}`);
+    const resp = await fetch(`/api/cases/tasks/${taskId}`);
     if (!resp.ok) throw new Error(`Task fetch failed ${resp.status}`);
     return await resp.json();
 }
+
+// New: batch task status polling
+// export async function fetchTasksStatus(taskIds) {
+//     const resp = await fetch(`${base_url}/case/tasks/status`, {
+//         method: 'POST',
+//         headers: { 
+//             'Content-Type': 'application/json',
+//             "x-api-key": api_key
+//         },
+//         body: JSON.stringify({ task_ids: taskIds })
+//     });
+//     if (!resp.ok) throw new Error(`Status poll failed ${resp.status}`);
+//     const data = await resp.json();
+//     return data?.results || [];
+// }
+
+// Optional: get single task by id
+// export async function fetchTaskById(taskId) {
+//     const resp = await fetch(`${base_url}/case/tasks/${taskId}`, {
+//         headers: {
+//             "x-api-key": api_key
+//         }
+//     });
+//     if (!resp.ok) throw new Error(`Task fetch failed ${resp.status}`);
+//     return await resp.json();
+// }
 
