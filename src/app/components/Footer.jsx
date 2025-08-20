@@ -11,7 +11,7 @@ const Footer = () => {
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Accelerating insurance claim decisions with AI-powered workflows, automation, and explainability.
             </p>
-            <div className="flex space-x-4">
+            {/* <div className="flex space-x-4">
               {[Linkedin, Twitter, Github, Facebook].map((Icon, i) => (
                 <a
                   key={i}
@@ -21,7 +21,7 @@ const Footer = () => {
                   <Icon className="h-4 w-4 text-white" />
                 </a>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Solutions */}
@@ -30,7 +30,7 @@ const Footer = () => {
             <ul className="space-y-3 text-sm text-gray-400">
               {['Auto Claims', 'Property Claims', 'Travel Insurance', 'Life Insurance'].map((item, i) => (
                 <li key={i}>
-                  <a href="#" className="hover:text-white transition-colors">{item}</a>
+                  {item}
                 </li>
               ))}
             </ul>
@@ -42,7 +42,7 @@ const Footer = () => {
             <ul className="space-y-3 text-sm text-gray-400">
               {['About Us', 'Careers', 'Press', 'Partners', 'Blog'].map((item, i) => (
                 <li key={i}>
-                  <a href="#" className="hover:text-white transition-colors">{item}</a>
+                  {item}
                 </li>
               ))}
             </ul>
@@ -73,9 +73,9 @@ const Footer = () => {
           <p>© 2025 Synsure. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             {['Privacy Policy', 'Terms of Service', 'Security', 'Cookies'].map((item, i) => (
-              <a key={i} href="#" className="hover:text-white transition-colors">
+              <div key={i}>
                 {item}
-              </a>
+              </div>
             ))}
           </div>
         </div>
