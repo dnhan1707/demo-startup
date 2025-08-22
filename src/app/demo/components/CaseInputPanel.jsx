@@ -1,6 +1,6 @@
 'use client'
 
-import { FileText, X, Upload, ChevronRight, FileDown } from 'lucide-react';
+import { FileText, X, Upload, ChevronRight, FileDown, History } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { saveCase } from '../../service/fetchFunctions';
 
@@ -40,7 +40,7 @@ export default function CaseInputPanel({
   setManualInput,
   onRequestChangeCase,
   saveDisabled = false,
-  onClearInputs // <-- new optional callback
+  onClearInputs
 }) {
   // Separate files by type
   const pdfFiles = useMemo(() => caseFiles?.filter(f => f.type === 'pdf'), [caseFiles]);
@@ -61,6 +61,7 @@ export default function CaseInputPanel({
 
   // Local saving state to show overlay and disable UI
   const [saving, setSaving] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const groupedFiles = useMemo(() => groupFilesByDate(caseFiles || []), [caseFiles]);
 
@@ -119,58 +120,6 @@ export default function CaseInputPanel({
         </div>
       )}
 
-      {/* --- File History Section --- */}
-      <div className="border border-gray-800 bg-gray-900/20 rounded-sm mb-4">
-        <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40 flex items-center justify-between">
-          <h3 className="text-sm font-medium text-gray-300 uppercase tracking-wider">Case File History</h3>
-          {historyLoading && (
-            <span className="flex items-center text-xs text-blue-400">
-              <span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mr-2" />
-              Loading...
-            </span>
-          )}
-          <button
-            onClick={() => refreshHistory()}
-            className="text-xs text-blue-400 hover:underline ml-2"
-            disabled={historyLoading || saving}
-          >
-            Refresh
-          </button>
-        </div>
-        <div className="p-4 space-y-4">
-          {historyLoading ? (
-            <div className="text-xs text-gray-400">Loading history...</div>
-          ) : Object.keys(groupedFiles).length === 0 ? (
-            <div className="text-gray-400 text-xs">No files found for this case.</div>
-          ) : (
-            Object.entries(groupedFiles).map(([dateHour, files]) => (
-              <div key={dateHour} className="mb-2">
-                <div className="font-bold text-xs text-blue-300 mb-1">
-                  {dateHour === 'Other'
-                    ? 'Other Files'
-                    : (() => {
-                        // Format as "YYYY-MM-DD HH:00"
-                        const date = dateHour.slice(0, 4) + '-' + dateHour.slice(4, 6) + '-' + dateHour.slice(6, 8);
-                        const hour = dateHour.slice(9, 11);
-                        return `Date: ${date} ${hour}:00`;
-                      })()
-                  }
-                </div>
-                {files.map((f, idx) => (
-                  <div key={f.filename + '_' + idx} className="flex items-center space-x-2 text-xs mb-1">
-                    <FileText className="h-4 w-4 text-blue-400" />
-                    <span className="truncate">{f.filename}</span>
-                    <a href={f.url} download className="text-green-400 hover:underline flex items-center">
-                      <FileDown className="h-4 w-4 mr-1" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
       {/* --- Warning if solved --- */}
       {hasPreviousResponse && !isCaseSaved && (
         <div className="bg-yellow-900/40 border border-yellow-700 text-yellow-300 px-4 py-2 rounded mb-2 text-xs">
@@ -197,7 +146,6 @@ export default function CaseInputPanel({
           <h2 className="text-sm font-medium text-gray-300 uppercase tracking-wider">
             DATA INPUTS - {selectedCase.case_name.toUpperCase()}
           </h2>
-          {/* Removed the CHANGE CASE button; back is now in the header */}
         </div>
         <div className="p-6 space-y-6">
           {inputs.map((input, index) => (
@@ -279,9 +227,71 @@ export default function CaseInputPanel({
         </div>
       </div>
 
+      {/* --- File History Section --- */}
+      <div className="border border-gray-800 bg-gray-900/20 rounded-sm">
+        <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/40 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setHistoryOpen(!historyOpen)}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              <ChevronRight className={`h-4 w-4 transition-transform ${historyOpen ? 'rotate-90' : ''}`} />
+            </button>
+            <h3 className="text-sm font-medium text-gray-300 uppercase tracking-wider">Case File History</h3>
+          </div>
+          <div className="flex items-center space-x-2">
+            {historyLoading && (
+              <span className="flex items-center text-xs text-blue-400">
+                <span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mr-2" />
+                Loading...
+              </span>
+            )}
+            <button
+              onClick={() => refreshHistory()}
+              className="text-xs text-blue-400 hover:underline"
+              disabled={historyLoading || saving}
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+        {historyOpen && (
+          <div className="p-4 max-h-64 overflow-y-auto space-y-4">
+            {historyLoading ? (
+              <div className="text-xs text-gray-400">Loading history...</div>
+            ) : Object.keys(groupedFiles).length === 0 ? (
+              <div className="text-gray-400 text-xs">No files found for this case.</div>
+            ) : (
+              Object.entries(groupedFiles).map(([dateHour, files]) => (
+                <div key={dateHour} className="mb-2">
+                  <div className="font-bold text-xs text-blue-300 mb-1">
+                    {dateHour === 'Other'
+                      ? 'Other Files'
+                      : (() => {
+                          const date = dateHour.slice(0, 4) + '-' + dateHour.slice(4, 6) + '-' + dateHour.slice(6, 8);
+                          const hour = dateHour.slice(9, 11);
+                          return `Date: ${date} ${hour}:00`;
+                        })()
+                    }
+                  </div>
+                  {files.map((f, idx) => (
+                    <div key={f.filename + '_' + idx} className="flex items-center space-x-2 text-xs mb-1">
+                      <FileText className="h-4 w-4 text-blue-400" />
+                      <span className="truncate">{f.filename}</span>
+                      <a href={f.url} download className="text-green-400 hover:underline flex items-center">
+                        <FileDown className="h-4 w-4 mr-1" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
       {/* --- Action Buttons --- */}
       <div className="flex space-x-4">
-        {/* Save enabled only when user added files or typed manual input */}
         <button
           onClick={handleSaveClick}
           className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 px-6 py-3 rounded-sm transition-colors text-sm font-medium"

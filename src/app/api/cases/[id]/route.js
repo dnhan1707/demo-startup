@@ -1,6 +1,6 @@
 export async function GET(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const response = await fetch(`${process.env.BASE_URL}/case/${id}`, {
             cache: 'no-store',
             headers: { 
