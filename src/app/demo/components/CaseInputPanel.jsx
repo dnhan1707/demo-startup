@@ -74,6 +74,14 @@ export default function CaseInputPanel({
     }
   };
 
+  // Handle multiple file selection - append to existing files
+  const handleMultipleFileChange = (inputIdx, newFiles) => {
+    const updated = [...inputs];
+    const existingFiles = Array.isArray(updated[inputIdx].value) ? updated[inputIdx].value : [];
+    const allFiles = [...existingFiles, ...newFiles];
+    handleFileChange(inputIdx, allFiles);
+  };
+
   // Disable all input areas while loading/saving
   const inputDisabled = loading || saving;
 
@@ -181,29 +189,32 @@ export default function CaseInputPanel({
                         type="file"
                         multiple
                         accept=".pdf,application/pdf"
-                        onChange={(e) => handleFileChange(index, Array.from(e.target.files).filter(f => f.type === "application/pdf"))}
+                        onChange={(e) => handleMultipleFileChange(index, Array.from(e.target.files).filter(f => f.type === "application/pdf"))}
                         className="hidden"
                         id={`file-${index}`}
                       />
                       <label htmlFor={`file-${index}`} className="cursor-pointer">
                         <Upload className="h-8 w-8 text-gray-500 mx-auto mb-2" />
                         <p className="text-sm text-gray-400">Drop files or click to upload</p>
-                        <p className="text-xs text-gray-500 mt-1">PDF only</p>
+                        <p className="text-xs text-gray-500 mt-1">PDF only - Multiple files supported</p>
                       </label>
                     </div>
                     {input.value && input.value.length > 0 && (
                       <div className="space-y-1">
+                        <div className="text-xs text-gray-400 mb-2">
+                          {input.value.length} file(s) selected
+                        </div>
                         {input.value.map((file, i) => (
                           <div
-                            key={file.name + '_' + i} // <-- ensure uniqueness even for duplicate filenames
+                            key={file.name + '_' + i}
                             className="flex items-center space-x-2 text-sm text-gray-300 bg-gray-800/50 px-3 py-2 rounded-sm"
                           >
                             <span><FileText className="h-4 w-4 text-blue-400" /></span>
-                            <span>{file.name}</span>
+                            <span className="flex-1 truncate">{file.name}</span>
                             <span className="text-xs text-gray-500">({(file.size / 1024).toFixed(1)} KB)</span>
                             <button
                               type="button"
-                              className="ml-2 text-red-400 hover:text-red-300"
+                              className="ml-2 text-red-400 hover:text-red-300 flex-shrink-0"
                               onClick={() => handleRemoveFile(index, i)}
                               title="Remove file"
                             >
