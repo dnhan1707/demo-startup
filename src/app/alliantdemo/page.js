@@ -47,7 +47,7 @@ export default function DemoPage() {
     setNewCaseName('');
     setRedirecting(true);
     setTimeout(() => {
-      router.push(`/demo/${tempId}?name=${encodeURIComponent(newCaseName)}`);
+      router.push(`/alliantdemo/${tempId}?name=${encodeURIComponent(newCaseName)}`);
     }, 400);
   };
 
@@ -91,7 +91,7 @@ export default function DemoPage() {
   const handleCaseSelect = (caseData) => {
     setRedirecting(true);
     setTimeout(() => {
-      router.push(`/demo/${caseData.id}`);
+      router.push(`/alliantdemo/${caseData.id}`);
     }, 400); // short delay for UX, can be adjusted or removed
   };
 

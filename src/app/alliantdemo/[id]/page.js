@@ -96,7 +96,7 @@ export default function CaseDemoPage() {
       });
       // Clear inputs after successful save
       clearUserInputs();
-      router.push('/demo');
+      router.push('/alliantdemo');
     } catch {
       alert('Failed to save case');
     }
@@ -189,7 +189,7 @@ export default function CaseDemoPage() {
       setShowUnsavedModal(true);
     } else {
       resetAll();
-      router.push('/demo'); // navigate back to list
+      router.push('/alliantdemo'); // navigate back to list
     }
   };
 
@@ -232,7 +232,7 @@ export default function CaseDemoPage() {
                   onClick={() => {
                     setShowUnsavedModal(false);
                     resetAll();
-                    router.push('/demo'); // leave without saving -> go back
+                    router.push('/alliantdemo'); // leave without saving -> go back
                   }}
                 >
                   Leave Without Saving
@@ -242,7 +242,7 @@ export default function CaseDemoPage() {
                   onClick={async () => {
                     await handleSaveCase();
                     setShowUnsavedModal(false);
-                    router.push('/demo'); // save, then go back
+                    router.push('/alliantdemo'); // save, then go back
                   }}
                   disabled={saveDisabled}
                 >
