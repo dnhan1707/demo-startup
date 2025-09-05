@@ -26,6 +26,8 @@ export default function CaseDemoPage() {
   const [latestResponse, setLatestResponse] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recentLoading, setRecentLoading] = useState(false);
+  const [demoUrl, setDemoUrl] = useState("alliantdemo")
+
 
   // Only temp case is unsaved
   const isTempCase = id && id.startsWith('temp_');
@@ -96,7 +98,7 @@ export default function CaseDemoPage() {
       });
       // Clear inputs after successful save
       clearUserInputs();
-      router.push('/alliantdemo');
+      router.push(`/${demoUrl}`);
     } catch {
       alert('Failed to save case');
     }
@@ -128,7 +130,6 @@ export default function CaseDemoPage() {
   const resetAll = () => {
     // Clear inputs before navigating away
     clearUserInputs();
-    // router.push('/demo');
   };
 
   // Fetch latest response only when user asks
@@ -169,7 +170,6 @@ export default function CaseDemoPage() {
 
       if (newId && newId !== id) {
         setSelectedCase(prev => ({ ...(prev || {}), id: newId }));
-        // router.replace(`/demo/${newId}`);
         await refreshHistory(newId);
       } else {
         await refreshHistory(newId || id);
@@ -189,7 +189,7 @@ export default function CaseDemoPage() {
       setShowUnsavedModal(true);
     } else {
       resetAll();
-      router.push('/alliantdemo'); // navigate back to list
+      router.push(`/${demoUrl}`); // navigate back to list
     }
   };
 
@@ -232,7 +232,7 @@ export default function CaseDemoPage() {
                   onClick={() => {
                     setShowUnsavedModal(false);
                     resetAll();
-                    router.push('/alliantdemo'); // leave without saving -> go back
+                    router.push(`${demoUrl}`); // leave without saving -> go back
                   }}
                 >
                   Leave Without Saving
@@ -242,7 +242,7 @@ export default function CaseDemoPage() {
                   onClick={async () => {
                     await handleSaveCase();
                     setShowUnsavedModal(false);
-                    router.push('/alliantdemo'); // save, then go back
+                    router.push(`${demoUrl}`); // save, then go back
                   }}
                   disabled={saveDisabled}
                 >
