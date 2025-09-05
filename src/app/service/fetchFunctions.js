@@ -200,6 +200,24 @@ export async function fetchTaskById(taskId) {
     return await resp.json();
 }
 
+export async function deleteFile(fileId) {
+    const response = await fetch(`/api/files/${fileId}`, {
+        method: 'DELETE'
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Failed to delete file');
+    return data;
+}
+
+export async function deleteResponseFile(fileId) {
+    const response = await fetch(`/api/responses/${fileId}`, {
+        method: 'DELETE'
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Failed to delete response file');
+    return data;
+}
+
 // New: batch task status polling
 // export async function fetchTasksStatus(taskIds) {
 //     const resp = await fetch(`${base_url}/case/tasks/status`, {

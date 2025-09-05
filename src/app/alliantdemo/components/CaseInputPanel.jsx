@@ -2,7 +2,7 @@
 
 import { FileText, X, Upload, ChevronRight, FileDown, History } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import { saveCase } from '../../service/fetchFunctions';
+import { saveCase, deleteFile, deleteResponseFile } from '../../service/fetchFunctions';
 
 function groupFilesByDate(files) {
   const groups = {};
@@ -62,6 +62,7 @@ export default function CaseInputPanel({
   // Local saving state to show overlay and disable UI
   const [saving, setSaving] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [deletingFileId, setDeletingFileId] = useState(null);
 
   const groupedFiles = useMemo(() => groupFilesByDate(caseFiles || []), [caseFiles]);
 
@@ -113,6 +114,33 @@ export default function CaseInputPanel({
       alert('Failed to save case');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle file deletion
+  const handleDeleteFile = async (file) => {
+    if (deletingFileId) return; // Prevent multiple deletes
+    
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${file.filename}"?`);
+    if (!confirmDelete) return;
+    
+    setDeletingFileId(file.id || file.filename);
+    try {
+      const isResponseFile = file.filename.startsWith('response_');
+      
+      if (isResponseFile) {
+        await deleteResponseFile(file.id || file.filename);
+      } else {
+        await deleteFile(file.id || file.filename);
+      }
+      
+      // Refresh history after successful deletion
+      await refreshHistory?.();
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert(`Failed to delete file: ${error.message}`);
+    } finally {
+      setDeletingFileId(null);
     }
   };
 
@@ -286,12 +314,26 @@ export default function CaseInputPanel({
                     }
                   </div>
                   {files.map((f, idx) => (
-                    <div key={f.filename + '_' + idx} className="flex items-center space-x-2 text-xs mb-1">
-                      <FileText className="h-4 w-4 text-blue-400" />
-                      <span className="truncate">{f.filename}</span>
-                      <a href={f.url} download className="text-green-400 hover:underline flex items-center">
-                        <FileDown className="h-4 w-4 mr-1" />
-                      </a>
+                    <div key={f.filename + '_' + idx} className="flex items-center space-x-2 text-xs mb-1 p-2 bg-gray-800/30 rounded">
+                      <FileText className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                      <span className="truncate flex-1">{f.filename}</span>
+                      <div className="flex items-center space-x-1 flex-shrink-0">
+                        <a href={f.url} download className="text-green-400 hover:text-green-300">
+                          <FileDown className="h-4 w-4" />
+                        </a>
+                        <button
+                          onClick={() => handleDeleteFile(f)}
+                          disabled={deletingFileId === (f.id || f.filename)}
+                          className="text-red-400 hover:text-red-300 disabled:opacity-50"
+                          title="Delete file"
+                        >
+                          {deletingFileId === (f.id || f.filename) ? (
+                            <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
