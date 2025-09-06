@@ -1,11 +1,46 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
+
 export default function Hero() {
   const videoUrl = process.env.NEXT_PUBLIC_HERO_VIDEO_URL || '/industrial_video.mp4';
+  const videoRef = useRef(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (video) {
+      // Force play on mobile devices
+      const playVideo = async () => {
+        try {
+          await video.play()
+        } catch (error) {
+          console.log('Autoplay failed:', error)
+          // Fallback: try to play when user interacts
+          const handleInteraction = async () => {
+            try {
+              await video.play()
+              document.removeEventListener('touchstart', handleInteraction)
+              document.removeEventListener('click', handleInteraction)
+            } catch (err) {
+              console.log('Manual play failed:', err)
+            }
+          }
+          document.addEventListener('touchstart', handleInteraction)
+          document.addEventListener('click', handleInteraction)
+        }
+      }
+      
+      // Try to play immediately
+      playVideo()
+    }
+  }, [])
   
   return (
     <section className="relative h-screen w-full overflow-hidden font-mono">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
